@@ -12,16 +12,19 @@ with DAG(
     start_date=pendulum.datetime(2021, 1, 1, tz="UTC"),
     catchup=False,
     dagrun_timeout=datetime.timedelta(minutes=60),
-    tags=["example", "example2"],
-    params={"example_key": "example_value"},
 ) as dag:
-    bash_t1 = BashOperator(
-        task_id="bash_t1",
-        bash_command="echo whoami",
+    bash_push = BashOperator(
+        task_id='bash_push',
+        bash_command = "echo START && "
+                        "echo XCOM_PUSHED"
+                        "{{ ti.xcom_push(key='bash_pushed', value='first_bash_message')}} &&"
+                        "echo COMPLETE"
     )
-    bash_t2 = BashOperator(
-        task_id="bash_t2",
-        bash_command="echo $HOSTNAME",
+    bash_pull = BashOperator(
+        task_id='bash_pull',
+        env={'PUSHED_VALUE': "{{ti.xcom_pull(key='bash_pushed')}}",
+             'RETURN_VALUE': "{{ti.xcom_pull(task_ids='bash_push')}}"}
+        bash_command = "echo $PUSHED_VALUE && echo $RETURN_VALUE ",
+        do_xcom_push=False
     )
-    
-    bash_t1 >> bash_t2
+    bash_push >> bash_pull
