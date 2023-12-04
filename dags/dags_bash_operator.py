@@ -10,7 +10,7 @@ from airflow.operators.python import BranchPythonOperator
 from airflow.operators.python import PythonOperator
 
 with DAG(
-    dag_id="1_dag_bash_python_with_xcom",
+    dag_id="1_dag",
     schedule="0 0 * * *",
     start_date=pendulum.datetime(2023, 12, 4, tz="UTC"),
     catchup=False,
