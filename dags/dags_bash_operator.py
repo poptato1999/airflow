@@ -14,7 +14,7 @@ from airflow.exceptions import AirflowException
 with DAG(
     dag_id="1_dag",
     schedule="0 0 * * *",
-    start_date=pendulum.datetime(2023, 12, 4, tz="UTC"),
+    start_date=pendulum.datetime(2023, 12, 5, tz="UTC"),
     catchup=False,
     dagrun_timeout=datetime.timedelta(minutes=60),
 ) as dag:
