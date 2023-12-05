@@ -10,6 +10,9 @@ from airflow.operators.python import BranchPythonOperator
 from airflow.operators.python import PythonOperator
 from airflow.operators.branch import BaseBranchOperator
 from airflow.exceptions import AirflowException
+from airflow.decorators import task_group
+from airflow.utils.task_group import TaskGroup
+
 
 with DAG(
     dag_id="1_dag",
@@ -18,22 +21,35 @@ with DAG(
     catchup=False,
     dagrun_timeout=datetime.timedelta(minutes=60),
 ) as dag:
+    def inner_func(**kwargs):
+        msg = kwargs.get('msg') or ''
+        print(msg)
     
-    bash_upstream_1 = BashOperator(
-        task_id='bash_upstream_1',
-        bash_command='echo upstream1'
-    )
-    
-    @task(task_id='python_upstream_1')
-    def python_upstream_1():
-        raise AirflowException('downstream_1 Exception!')
-    
-    @task(task_id='python_upstream_2')
-    def python_upstream_2():
-        print('정상처리')
-    
-    @task(task_id='python_downstream_1', trigger_rule='all_done')
-    def python_downstream_1():
-        print('정상처리')
+    @task_group(group_id='first_group')
+    def group_1():
+        ''' task_group 데커레이터를 이용한 첫 번ㅉ 그룹입니다. '''
         
-    [bash_upstream_1, python_upstream_1(), python_upstream_2()] >> python_downstream_1
+        @task(task_id='inner_function1')
+        def inner_func1(**kwargs):
+            print('첫 번째 TaskGroup 내 첫 번째 task입니다.')
+            
+        inner_func2 = PythonOperator(
+            task_id='inner_function2',
+            python_callable=inner_func,
+            op_kwargs={'msg': '첫 번째 TaskGroup내 두번째 task 입니다.'}
+        )
+        
+        inner_func1() >> inner_func2
+        
+    with TaskGroup(group_id='second_group', tooltip='두 번째 그룹입니다.') as group_2:
+        @task(task_id='inner_function1')
+        def inner_func1(**kwargs):
+            print('두 번째 TaskGroup 첫 번째 task 입니다.')
+            
+        inner_function2 = PythonOperator(
+            task_id='inner_function2',
+            python_callable=inner_func,
+            op_kwargs={'msg': '두 번째 TaskGroup 내 두 번째 task입니다.'}
+        )
+        
+    group_1() >> group_2
