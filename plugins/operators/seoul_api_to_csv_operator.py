@@ -2,7 +2,7 @@ from airflow.models.baseoperator import BaseOperator
 from airflow.hooks.base import BaseHook 
 import pandas as pd
 
-class SeoulSpiToCsvOperator(BaseOperator):
+class SeoulApiToCsvOperator(BaseOperator):
     template_fields = ('endpoint', 'path', 'file_name', 'base_dt')
     
     def __init__(self, dataset_nm, path, file_name, base_dt=None, **kwargs):
@@ -25,7 +25,7 @@ class SeoulSpiToCsvOperator(BaseOperator):
         while True:
             self.log.info(f'시작: {start_row}')
             self.log.info(f'끝: {end_row}')
-            row_df = self.__call__api(self.base_url, start_row, end_row)
+            row_df = self._call_api(self.base_url, start_row, end_row)
             total_row_Df = pd.concat([total_row_df, row_df])
             if len(row_df) < 1000:
                 break
@@ -37,7 +37,7 @@ class SeoulSpiToCsvOperator(BaseOperator):
             os.system(f'mkdir -p {self.path}')
         total_row_Df.to_csv(self.path + '/' + self.file_name, encoding='utf-8', index=False)
                     
-    def call_api(self, base_url, start_row, end_row):
+    def _call_api(self, base_url, start_row, end_row):
         import requests
         import json
         
