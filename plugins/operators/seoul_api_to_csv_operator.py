@@ -26,7 +26,7 @@ class SeoulApiToCsvOperator(BaseOperator):
             self.log.info(f'시작: {start_row}')
             self.log.info(f'끝: {end_row}')
             row_df = self._call_api(self.base_url, start_row, end_row)
-            total_row_Df = pd.concat([total_row_df, row_df])
+            total_row_df = pd.concat([total_row_df, row_df])
             if len(row_df) < 1000:
                 break
             else:
@@ -35,7 +35,7 @@ class SeoulApiToCsvOperator(BaseOperator):
         
         if not os.path.exists(self.path):
             os.system(f'mkdir -p {self.path}')
-        total_row_Df.to_csv(self.path + '/' + self.file_name, encoding='utf-8', index=False)
+        total_row_df.to_csv(self.path + '/' + self.file_name, encoding='utf-8', index=False)
                     
     def _call_api(self, base_url, start_row, end_row):
         import requests
