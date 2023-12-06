@@ -18,10 +18,9 @@ from airflow.providers.http.operators.http import SimpleHttpOperator
 
 with DAG(
     dag_id="1_dags",
-    schedule="30 9 * * *",
     start_date=pendulum.datetime(2023,12,6,tz='Asia/Seoul'),
     catchup=False,
-    schedule=None
+    schedule=None,
 ) as dag:
     
     tb_cycle_station_info = SimpleHttpOperator(
